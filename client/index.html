@@ -2,8 +2,19 @@
 <html lang='zh-cn'>
     <head>
         <title>Playgo</title>
-        <script src="./js/playgo.js"></script>
     </head>
-    <body>
+    <body style='padding:0;margin:0'>
+        <canvas id='canvas' style='background:#ccc'>Sorry, your client not support canvas!</canvas>
+        <button id='option-button' style='position:absolute;top:5px;left:5px;width:40px;height:40px;'>op</button>
+        <div id='option-pannel' style='display:none;position:absolute;top:0;left:0;width:80%;height:300px;margin:10%;background:#fff'>
+            <button id='start' style=''>start</button>
+            <input id='host'>
+            <button id='join' style=''>join</button>
+            <button id='pass' style=''>pass</button>
+            <button id='giveup' style=''>giveup</button>
+
+        </div>
+        <script src="./js/2d.js"></script>
+        <script src="./js/playgo.js"></script>
     </body>
 </html>
