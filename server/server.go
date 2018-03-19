@@ -185,11 +185,11 @@ func (this *Frame) turn() {
 }
 
 func (this *Frame) giveup() {
-	// TODO
+	this.Giveup = this.Next
 }
 
 func (this *Frame) illegal(chess *Chess) bool {
-	// TODO check step is legal
+	// TODO check step is illegal
 	return false
 }
 
@@ -199,4 +199,25 @@ func (this *Frame) rerenderChesses() {
 
 func (this *Frame) result() {
 	// TODO calculate result
+}
+
+func processChesses(chesses []*Chess, chess *Chess) []*Chess {
+	chessPositionIndex := make(map[int64]*Chess)
+	for _, existChess := range chesses {
+		key := buildKey(existChess)
+		chessPositionIndex[key] = existChess
+	}
+}
+
+type Direct int32
+
+const (
+	Direct_UP    Direct = 0
+	Direct_DOWN  Direct = 1
+	Direct_LEFT  Direct = 2
+	Direct_RIGHT Direct = 3
+)
+
+func (this *Chess) getKey() int64 {
+	return this.lon*100 + this.lat
 }
