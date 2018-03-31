@@ -151,47 +151,6 @@
                 var op = self.try
                 drawTry(op.wb,op.x,op.y)
             }
-        //    var drawButton = function() {
-        //        for (var i=0;i<self.button.length;i++){
-        //            var button = self.button[i]
-        //            self.ctx.beginPath()
-        //            self.ctx.lineWidth = 1
-        //            self.ctx.strokeStyle = '#ccc'
-        //            self.ctx.fillStyle = '#fff'
-        //            self.ctx.rect(button.x,button.y,button.w,button.h)
-        //            self.ctx.closePath()
-        //            self.ctx.fill()
-        //            self.ctx.stroke()
-
-        //            self.ctx.textAlign = 'left'
-        //            self.ctx.fillStyle = '#000'
-        //            self.ctx.font = 'small-caps 16px arial'
-        //            var text = typeof button.text === 'function' ? button.text() : button.text
-        //            self.ctx.fillText(text,button.x+button.w/4,button.y+button.h*5/8)
-        //        }
-        //    }
-        //    drawButton()
-        //    var drawLabel = function() {
-        //        for (var i=0;i<self.label.length;i++){
-        //            var button = self.label[i]
-        //            self.ctx.beginPath()
-        //            self.ctx.lineWidth = 1
-        //            self.ctx.strokeStyle = '#ccc'
-        //            self.ctx.fillStyle = '#fff'
-        //            self.ctx.rect(button.x,button.y,button.w,button.h)
-        //            self.ctx.closePath()
-        //            self.ctx.fill()
-        //            self.ctx.stroke()
-
-        //            self.ctx.textAlign = 'left'
-        //            self.ctx.fillStyle = '#000'
-        //            self.ctx.font = 'small-caps 16px arial'
-        //            var text = typeof button.text === 'function' ? button.text() : button.text
-        //            self.ctx.fillText(text,button.x+button.w/4,button.y+button.h*5/8)
-        //        }
-        //    }
-        //    drawLabel()
-        }
         self.resize = function (w,h) {
             self.cw = w
             self.ch = h
@@ -213,29 +172,6 @@
                 draw()
             }
         }
-       // self.button = [] // button
-       // self.addButton = function(text, onclick) {
-       //     var existButton = self.button.length + 1
-       //     self.button.push({
-       //         text:text,
-       //         onclick:onclick,
-       //         x:self.cw - self.oplength,
-       //         y:self.ch - self.oplength/2 - existButton * self.oplength,
-       //         w:self.oplength,
-       //         h:self.oplength/2,
-       //     })
-       // }
-       // self.label = [] // label
-       // self.addLabel = function(text) {
-       //     var existLabel = self.label.length + 1
-       //     self.label.push({
-       //         text:text,
-       //         x:0,
-       //         y:existLabel * self.oplength,
-       //         w:self.oplength,
-       //         h:self.oplength/2,
-       //     })
-       // }
         draw()
     }
     window.go2d= go2d

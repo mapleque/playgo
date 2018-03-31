@@ -52,10 +52,9 @@ class Playgo {
         this.conn = conn
     }
 
-    start() {
+    start(who) {
+        this.who = who
         this.conn.send({cmd:1})
-        // TODO who
-        this.who = 1
     }
     setWho(wh) {
         this.who = wh
@@ -83,7 +82,7 @@ class Playgo {
         })
     }
 
-    pass() {
+    back() {
         this.conn.send({
             cmd:5,
             chess:{who:this.who},
@@ -102,6 +101,8 @@ class Playgo {
 class View {
     constructor(playgo) {
         this.playgo = playgo
+        this.eventMap = {}
+        this.go2d = new go2d(context, w, h)
     }
     initView() {
         var playgo = this.playgo
@@ -118,12 +119,7 @@ class View {
         }
         resizeCanvas()
 
-        var gd = new go2d(context, w, h)
-       // gd.addButton('option', () => {})
-       // gd.addButton('join', () => {})
-       // gd.addButton('pass', () => {})
-       // gd.addButton('giveup', () => {})
-       // gd.addLabel(()=>playgo.who === playgo.next ? 'you' : 'wait...')
+        var gd = this.go2d
         window.onresize = function () {
             resizeCanvas()
             gd.resize(w, h)
@@ -161,11 +157,46 @@ class View {
             let pannel = document.getElementById('option-pannel')
             pannel.style.display = pannel.style.display === 'none' ? '':'none'
         }
+
+        document.getElementById('start').onclick = () => {
+            let pannel = document.getElementById('welcome')
+            pannel.style.display = 'none'
+        }
+
+        document.getElementById('go').onclick = () => {
+            let who = document.getElementsByName('who').filter(item => item.checked).value
+            let f = this.eventMap['go'] || f()
+        }
+        document.getElementById('pass').onclick = () => {
+            let f = this.eventMap['pass'] || f()
+        }
+        document.getElementById('giveup').onclick = () => {
+            let f = this.eventMap['giveup'] || f()
+        }
+        document.getElementById('back').onclick = () => {
+            let f = this.eventMap['back'] || f()
+        }
+    }
+    render(frame) {
+        // TODO
+    }
+    showTips(tips) {
+        let pannel = document.getElementById('tips')
+        pannel.innerHTML = tips
+        pannel.style.display = ''
+    }
+    hideTips() {
+        let pannel = document.getElementById('tips')
+        pannel.innerHTML = ''
+        pannel.style.display = 'none'
+    }
+    bindEvent(eventName, f) {
+        this.eventMap[eventName] = f
     }
 }
 
 (function(){
-    let MaxReconnectTimes = 10;
+    let MaxReconnectTimes = 1;
     let connectTimes = 0;
     let playgo = new Playgo()
     let view = new View(playgo)
@@ -173,23 +204,39 @@ class View {
     view.initView()
 
     let conn = new Server('ws://127.0.0.1:9998')
+    view.showTips('connecting...')
     conn.connect()
     playgo.bindServer(conn)
+    view.bindEvent('go',playgo.start)
+    view.bindEvent('pass',playgo.pass)
+    view.bindEvent('giveup',playgo.giveup)
+    view.bindEvent('back',playgo.back)
+
     conn.setConfig({
         onopen: () => {
-            console.log('online now')
+            view.hideTips()
             playgo.online()
             connectTimes = 0
         },
         onclose: () => {
             playgo.offline()
-            console.log('offline now, reconnect after 5s')
+            view.showTips('offline now, reconnect after 5s')
             connectTimes++
             if (connectTimes > MaxReconnectTimes) {
-                console.log('stop retry cause too much times, please reload the page if nessesury')
+                view.showTips('stop retry cause too much times, please reload the page if nessesury')
                 return
             }
-            setTimeout(() => {conn.connect()}, 5000)
+            setTimeout(() => {
+                view.showTips('connecting...')
+                conn.connect()
+            }, 5000)
+        },
+        onmessage: (resp) => {
+            if (resp.code = 0) {
+                view.render(resp.frame)
+            } else {
+                console.error(resp)
+            }
         }
     })
 })();
