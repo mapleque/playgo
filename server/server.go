@@ -1,17 +1,11 @@
 package main
 
 import (
-	"bytes"
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"net"
-	"strconv"
 	"sync"
-	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -43,19 +37,7 @@ func NewPlaygoGrpcServer() *PlaygoGrpcServer {
 	}
 }
 
-func NewFrame() *Frame {
-	// rand a token
-	timestamp := []byte(strconv.FormatInt(time.Now().Unix(), 10))
-	prefix := []byte(strconv.Itoa(rand.Intn(10000)))
-	surfix := []byte(strconv.Itoa(rand.Intn(10000)))
-	src := bytes.Join([][]byte{prefix, timestamp, surfix}, []byte(""))
-	h := md5.New()
-	h.Write(src)
-	data := h.Sum(nil)
-	dst := make([]byte, hex.EncodedLen(len(data)))
-	hex.Encode(dst, data)
-	token := string(dst)
-
+func NewFrame(token string) *Frame {
 	return &Frame{
 		Token:   token,
 		Steps:   []*Chess{},
@@ -78,8 +60,8 @@ func (this *PlaygoGrpcServer) Operation(stream PlaygoService_OperationServer) er
 		var setHandle *Frame
 		switch op.Cmd {
 		case Cmd_CREATE:
-			setHandle = NewFrame()
-			this.Sets.Store(setHandle.Token, setHandle)
+			setHandle = NewFrame(op.Token)
+			this.Sets.Store(op.Token, setHandle)
 		default:
 			if set, exist := this.Sets.Load(op.Token); exist {
 				setHandle = set.(*Frame)
@@ -108,6 +90,8 @@ func (this *Frame) buildErrorFrame(code FrameResponse_Code, tips string) *FrameR
 
 func (this *Frame) buildFrame() *FrameResponse {
 	return &FrameResponse{
+		Code:  0,
+		Tips:  "",
 		Frame: this,
 	}
 }
@@ -204,9 +188,10 @@ func (this *Frame) result() {
 func processChesses(chesses []*Chess, chess *Chess) []*Chess {
 	chessPositionIndex := make(map[int64]*Chess)
 	for _, existChess := range chesses {
-		key := buildKey(existChess)
+		key := existChess.getKey()
 		chessPositionIndex[key] = existChess
 	}
+	return nil
 }
 
 type Direct int32
@@ -219,5 +204,5 @@ const (
 )
 
 func (this *Chess) getKey() int64 {
-	return this.lon*100 + this.lat
+	return this.Lon*100 + this.Lat
 }

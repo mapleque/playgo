@@ -151,6 +151,7 @@
                 var op = self.try
                 drawTry(op.wb,op.x,op.y)
             }
+        }
         self.resize = function (w,h) {
             self.cw = w
             self.ch = h

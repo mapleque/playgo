@@ -52,17 +52,19 @@ class Playgo {
         this.conn = conn
     }
 
-    start(who) {
+    start(token,who) {
+        this.token = token
         this.who = who
-        this.conn.send({cmd:1})
-    }
-    setWho(wh) {
-        this.who = wh
+        this.conn.send({
+            token:this.token,
+            cmd:1,
+        })
     }
 
     put(x, y) {
         this.round++
         this.conn.send({
+            token:this.token,
             cmd:2,
             chess:{lon:x,lat:y,who:this.who},
         })
@@ -70,6 +72,7 @@ class Playgo {
 
     pass() {
         this.conn.send({
+            token:this.token,
             cmd:3,
             chess:{who:this.who},
         })
@@ -77,6 +80,7 @@ class Playgo {
 
     giveup() {
         this.conn.send({
+            token:this.token,
             cmd:4,
             chess:{who:this.who},
         })
@@ -84,6 +88,7 @@ class Playgo {
 
     back() {
         this.conn.send({
+            token:this.token,
             cmd:5,
             chess:{who:this.who},
         })
@@ -102,7 +107,6 @@ class View {
     constructor(playgo) {
         this.playgo = playgo
         this.eventMap = {}
-        this.go2d = new go2d(context, w, h)
     }
     initView() {
         var playgo = this.playgo
@@ -119,7 +123,7 @@ class View {
         }
         resizeCanvas()
 
-        var gd = this.go2d
+        var gd = this.go2d = new go2d(context, w, h)
         window.onresize = function () {
             resizeCanvas()
             gd.resize(w, h)
@@ -145,7 +149,7 @@ class View {
             }
             var cmd = gd.currentCmd(playgo.who === 1, pos.x, pos.y)
             gd.put(playgo.round+1, cmd)
-            op = gd.decodeCmd(0, cmd)
+            var op = gd.decodeCmd(0, cmd)
             playgo.put(op.x,op.y)
         }
         canvas.addEventListener('mousemove', onmove, false)
@@ -153,28 +157,34 @@ class View {
         canvas.addEventListener('mouseup', onup, false)
         canvas.addEventListener('touchend', onup, false)
 
-        document.getElementById('option-button').onclick = () => {
-            let pannel = document.getElementById('option-pannel')
-            pannel.style.display = pannel.style.display === 'none' ? '':'none'
-        }
-
         document.getElementById('start').onclick = () => {
             let pannel = document.getElementById('welcome')
             pannel.style.display = 'none'
         }
 
         document.getElementById('go').onclick = () => {
-            let who = document.getElementsByName('who').filter(item => item.checked).value
-            let f = this.eventMap['go'] || f()
+            let who = Array.from(document.getElementsByName('who')).filter(item => item.checked)[0].value
+            let pannel = document.getElementById('option-pannel')
+            let token = document.getElementById('token').value
+            if (token === '' || !token) {
+                alert('invalid token')
+                return
+            }
+            pannel.style.display = 'none'
+            let f = this.eventMap['go']
+            f && f(token, who)
         }
         document.getElementById('pass').onclick = () => {
-            let f = this.eventMap['pass'] || f()
+            let f = this.eventMap['pass']
+            f && f()
         }
         document.getElementById('giveup').onclick = () => {
-            let f = this.eventMap['giveup'] || f()
+            let f = this.eventMap['giveup']
+            f && f()
         }
         document.getElementById('back').onclick = () => {
-            let f = this.eventMap['back'] || f()
+            let f = this.eventMap['back']
+            f && f()
         }
     }
     render(frame) {
@@ -207,10 +217,14 @@ class View {
     view.showTips('connecting...')
     conn.connect()
     playgo.bindServer(conn)
-    view.bindEvent('go',playgo.start)
-    view.bindEvent('pass',playgo.pass)
-    view.bindEvent('giveup',playgo.giveup)
-    view.bindEvent('back',playgo.back)
+    view.bindEvent('go',(token,who)=>{
+        if (token && who) {
+            playgo.start(token, who)
+        }
+    })
+    view.bindEvent('pass',()=>playgo.pass())
+    view.bindEvent('giveup',()=>playgo.giveup())
+    view.bindEvent('back',()=>playgo.back())
 
     conn.setConfig({
         onopen: () => {
@@ -232,11 +246,13 @@ class View {
             }, 5000)
         },
         onmessage: (resp) => {
-            if (resp.code = 0) {
-                view.render(resp.frame)
-            } else {
-                console.error(resp)
+            let frame = JSON.parse(resp.data)
+            if (frame.code) {
+                view.showTips('error['+frame.code+']:'+frame.tips)
+                setTimeout(()=>{view.hideTips()},3000)
+                return
             }
+            view.render(frame)
         }
     })
 })();
