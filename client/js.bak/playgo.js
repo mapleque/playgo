@@ -136,7 +136,7 @@ class View {
                 x: Math.round(t.clientX),
                 y: Math.round(t.clientY)
             }
-            var cmd = gd.currentCmd(playgo.who, pos.x, pos.y)
+            var cmd = gd.currentCmd(playgo.who === 1, pos.x, pos.y)
             gd.preview(cmd)
         }
         var onup = (t) => {
@@ -150,7 +150,9 @@ class View {
             var cmd = gd.currentCmd(playgo.who === 1, pos.x, pos.y)
             gd.put(playgo.round+1, cmd)
             var op = gd.decodeCmd(0, cmd)
-            playgo.put(op.x,op.y)
+            if (op) {
+                playgo.put(op.x,op.y)
+            }
         }
         canvas.addEventListener('mousemove', onmove, false)
         canvas.addEventListener('touchmove', onmove, false)
@@ -163,7 +165,7 @@ class View {
         }
 
         document.getElementById('go').onclick = () => {
-            let who = Array.from(document.getElementsByName('who')).filter(item => item.checked)[0].value
+            let who = parseInt(Array.from(document.getElementsByName('who')).filter(item => item.checked)[0].value)
             let pannel = document.getElementById('option-pannel')
             let token = document.getElementById('token').value
             if (token === '' || !token) {
@@ -188,7 +190,14 @@ class View {
         }
     }
     render(frame) {
-        // TODO
+        if (frame.steps) {
+            this.go2d.render(frame.steps.map((item,seq)=>({
+                seq:seq,
+                x:item.lon,
+                y:item.lat,
+                wb:item.who===1,
+            })))
+        }
     }
     showTips(tips) {
         let pannel = document.getElementById('tips')
@@ -213,7 +222,7 @@ class View {
 
     view.initView()
 
-    let conn = new Server('ws://127.0.0.1:9998')
+    let conn = window.conn = new Server('ws://127.0.0.1:9998')
     view.showTips('connecting...')
     conn.connect()
     playgo.bindServer(conn)

@@ -33,7 +33,6 @@
             }
             return {
                 seq:seq,
-                cmd:cmd,
                 x:x,// 1-19
                 y:y,// 1-19
                 wb:wb, // ture|false
@@ -172,6 +171,10 @@
                 self.try = op
                 draw()
             }
+        }
+        self.render = function(filled) {
+            self.filled = filled
+            draw()
         }
         draw()
     }
