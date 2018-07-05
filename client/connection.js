@@ -51,7 +51,7 @@ export default class Connection {
   back() {
     // server should back a chess and compute live and die
     this.send({
-      type: 'do',
+      type: 'back',
       data: {}
     })
   }

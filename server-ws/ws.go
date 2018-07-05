@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/mapleque/playgo"
+	playgo "github.com/mapleque/playgo/server"
 	"golang.org/x/net/websocket"
 )
 

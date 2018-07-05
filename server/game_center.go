@@ -1,4 +1,4 @@
-package playgo
+package server
 
 type Connector interface {
 	BroadcastGameList(data interface{})
